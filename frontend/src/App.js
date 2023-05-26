@@ -1,143 +1,143 @@
-import axios from "axios";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
-import Modal from "react-modal";
-import { useNetwork, useAccount } from "wagmi";
-import { useState, useEffect } from "react";
-import { Gallery } from "./Gallery";
-import UserNFTs from "./UserNFTs";
-import Booking from "./Booking";
-import ABI from "./ABI.json";
-import { ethers } from "ethers";
-import AVVY from "@avvy/client";
+import axios from 'axios'
+import { ConnectButton } from '@rainbow-me/rainbowkit'
+import Modal from 'react-modal'
+import { useNetwork, useAccount } from 'wagmi'
+import { useState, useEffect } from 'react'
+import { Gallery } from './Gallery'
+import UserNFTs from './UserNFTs'
+import Booking from './Booking'
+import ABI from './ABI.json'
+import { ethers } from 'ethers'
+import AVVY from '@avvy/client'
 
-import "react-datepicker/dist/react-datepicker.css";
+import 'react-datepicker/dist/react-datepicker.css'
 
-Modal.setAppElement("#root");
+Modal.setAppElement('#root')
 
 function App() {
-  const { address, isConnected } = useAccount();
-  const [userNFTs, setUserNFTs] = useState([]);
-  const [selectedNFT, setSelectedNFT] = useState(null);
-  const [selectedSlot, setSelectedSlot] = useState(null);
-  const [modalIsOpen, setIsOpen] = useState(false);
-  const [bookingReferenceTime, setBookingReferenceTime] = useState(null);
-  const [bookingIntervalSize, setBookingIntervalSize] = useState(null);
-  const [step, setStep] = useState(1);
+  const { address, isConnected } = useAccount()
+  const [userNFTs, setUserNFTs] = useState([])
+  const [selectedNFT, setSelectedNFT] = useState(null)
+  const [selectedSlot, setSelectedSlot] = useState(null)
+  const [modalIsOpen, setIsOpen] = useState(false)
+  const [bookingReferenceTime, setBookingReferenceTime] = useState(null)
+  const [bookingIntervalSize, setBookingIntervalSize] = useState(null)
+  const [step, setStep] = useState(1)
 
-  const { chain } = useNetwork();
-  const chainData = ABI[chain.id][0];
+  const { chain } = useNetwork()
+  const chainData = ABI[chain.id][0]
   const mainnetProvider = new ethers.JsonRpcProvider(
-    "https://api.avax.network/ext/bc/C/rpc"
-  );
+    'https://api.avax.network/ext/bc/C/rpc'
+  )
   const contractProvider = new ethers.JsonRpcProvider(
     chain.id === 43113
-      ? "https://api.avax-test.network/ext/bc/C/rpc"
-      : "https://api.avax.network/ext/bc/C/rpc"
-  );
-  const contractAddress = chainData.contracts.Rental.address;
-  const contractAbi = chainData.contracts.Rental.abi;
+      ? 'https://api.avax-test.network/ext/bc/C/rpc'
+      : 'https://api.avax.network/ext/bc/C/rpc'
+  )
+  const contractAddress = chainData.contracts.Rental.address
+  const contractAbi = chainData.contracts.Rental.abi
   const contract = new ethers.Contract(
     contractAddress,
     contractAbi,
     contractProvider
-  );
-  const avvy = new AVVY(mainnetProvider);
+  )
+  const avvy = new AVVY(mainnetProvider)
   useEffect(() => {
-    let active = true;
+    let active = true
     const run = async () => {
       const res = await Promise.all([
         contract.bookingReferenceTime(),
         contract.bookingIntervalSize(),
-      ]);
-      setBookingReferenceTime(res[0]);
-      setBookingIntervalSize(res[1]);
-    };
+      ])
+      setBookingReferenceTime(res[0])
+      setBookingIntervalSize(res[1])
+    }
     if (active) {
-      run();
+      run()
     }
     return () => {
-      active = false;
-    };
-  });
+      active = false
+    }
+  })
 
   const getOffset = (epoch) => {
-    const _bookingReferenceTime = parseInt(bookingReferenceTime);
-    const _bookingIntervalSize = parseInt(bookingIntervalSize);
+    const _bookingReferenceTime = parseInt(bookingReferenceTime)
+    const _bookingIntervalSize = parseInt(bookingIntervalSize)
     const intervalOffset = parseInt(
       (epoch - _bookingReferenceTime) / _bookingIntervalSize
-    );
-    return intervalOffset;
-  };
+    )
+    return intervalOffset
+  }
 
   const getCurrentOffset = () => {
-    const now = parseInt(Date.now() / 1000);
-    return getOffset(now);
-  };
+    const now = parseInt(Date.now() / 1000)
+    return getOffset(now)
+  }
 
   const fetchUserNFTs = async (pageToken = null) => {
     if (!isConnected) {
-      return;
+      return
     }
     axios
       .get(
         `https://glacier-api.avax.network/v1/chains/43114/addresses/${address}/balances:listErc721?pageSize=100${
-          pageToken ? "&pageToken=" + pageToken : ""
+          pageToken ? '&pageToken=' + pageToken : ''
         }`
       )
       .then((response) => {
-        console.log(response.data?.erc721TokenBalances);
-        const nftdata = response?.data?.erc721TokenBalances;
+        console.log(response.data?.erc721TokenBalances)
+        const nftdata = response?.data?.erc721TokenBalances
         if (nftdata.length > 0) {
-          let paginatedData = [];
+          let paginatedData = []
 
           nftdata.map((nft) => {
             paginatedData.push({
               image: nft.metadata?.imageUri
                 ? nft.metadata.imageUri.replace(
-                    "ipfs://",
-                    "https://ipfs.io/ipfs/"
+                    'ipfs://',
+                    'https://ipfs.io/ipfs/'
                   )
-                : "/img/notFound.jpg",
+                : '/img/notFound.jpg',
               name: nft.metadata.name
-                ? nft.name + " - " + nft.metadata.name
-                : nft.name + " #" + nft.tokenId,
+                ? nft.name + ' - ' + nft.metadata.name
+                : nft.name + ' #' + nft.tokenId,
               collectionName: nft.name,
               collectionContract: nft.address,
               tokenId: nft.tokenId,
-            });
-          });
+            })
+          })
 
-          setUserNFTs((previous) => [...previous, ...paginatedData]);
-          if (nftdata.length == 100 && response.nextPageToken != "") {
-            fetchUserNFTs(response.nextPageToken);
+          setUserNFTs((previous) => [...previous, ...paginatedData])
+          if (nftdata.length == 100 && response.nextPageToken != '') {
+            fetchUserNFTs(response.nextPageToken)
           }
         }
       })
       .catch(function (error) {
-        console.log(error);
-      });
-  };
+        console.log(error)
+      })
+  }
 
   const modalStyles = {
     overlay: {
-      background: "rgba(0, 0, 0, 0.3)",
+      background: 'rgba(0, 0, 0, 0.3)',
     },
     content: {
-      top: "50%",
-      left: "50%",
-      right: "auto",
-      bottom: "auto",
-      marginRight: "-50%",
-      transform: "translate(-50%, -50%)",
-      minWidth: "480px",
-      width: "50%",
-      color: "#222",
+      top: '50%',
+      left: '50%',
+      right: 'auto',
+      bottom: 'auto',
+      marginRight: '-50%',
+      transform: 'translate(-50%, -50%)',
+      minWidth: '480px',
+      width: '50%',
+      color: '#222',
     },
-  };
+  }
 
   function openModal(slotNum) {
-    setSelectedSlot(slotNum);
-    setIsOpen(true);
+    setSelectedSlot(slotNum)
+    setIsOpen(true)
   }
 
   function afterOpenModal() {
@@ -145,18 +145,18 @@ function App() {
   }
 
   function closeModal() {
-    setIsOpen(false);
+    setIsOpen(false)
   }
 
   const selectNFT = (nft) => {
-    setSelectedNFT(nft);
-  };
+    setSelectedNFT(nft)
+  }
 
   useEffect(() => {
-    (async () => {
-      fetchUserNFTs();
-    })();
-  }, [isConnected]);
+    ;(async () => {
+      fetchUserNFTs()
+    })()
+  }, [isConnected])
 
   return (
     <>
@@ -215,7 +215,7 @@ function App() {
         )}
       </Modal>
     </>
-  );
+  )
 }
 
-export default App;
+export default App

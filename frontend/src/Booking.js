@@ -1,27 +1,27 @@
-import NFTPreview from "./NFTPreview";
-import { useState, useEffect } from "react";
-import DatePicker from "react-datepicker";
+import NFTPreview from './NFTPreview'
+import { useState, useEffect } from 'react'
+import DatePicker from 'react-datepicker'
 
 function TimePicker(props) {
-  const hours = [];
+  const hours = []
   for (let i = 0; i < 24; i += 1) {
-    hours.push(i);
+    hours.push(i)
   }
   return (
     <select onChange={props.onChange}>
       {hours.map((h) => {
-        const time = `${h}:00`; // this doesn't support the different refeerence times and interval sizes
+        const time = `${h}:00` // this doesn't support the different refeerence times and interval sizes
         return (
           <option
-            selected={props.value === time ? "selected" : ""}
+            selected={props.value === time ? 'selected' : ''}
             value={time}
           >
             {time}
           </option>
-        );
+        )
       })}
     </select>
-  );
+  )
 }
 
 function Booking(props) {
@@ -35,41 +35,41 @@ function Booking(props) {
     selectedNFT,
     selectedSlot,
     setStep,
-  } = props;
-  const [activeNFT, setActiveNFT] = useState(0);
-  const [bookedDays, setBookedDays] = useState(null);
-  const [referenceOffset, setReferenceOffset] = useState(null);
-  const [startDate, setStartDate] = useState(null);
-  const [startTime, setStartTime] = useState("0:00");
-  const [endDate, setEndDate] = useState(null);
-  const [endTime, setEndTime] = useState("0:00");
+  } = props
+  const [activeNFT, setActiveNFT] = useState(0)
+  const [bookedDays, setBookedDays] = useState(null)
+  const [referenceOffset, setReferenceOffset] = useState(null)
+  const [startDate, setStartDate] = useState(null)
+  const [startTime, setStartTime] = useState('0:00')
+  const [endDate, setEndDate] = useState(null)
+  const [endTime, setEndTime] = useState('0:00')
 
   useEffect(() => {
-    let active = true;
+    let active = true
     const run = async () => {
       const currentOffset = getCurrentOffset(
         bookingReferenceTime,
         bookingIntervalSize
-      );
+      )
       // load bookings for next year
       const isBooked = await contract.isBooked(
         selectedSlot,
         currentOffset,
         currentOffset + 24 * 365
-      );
-      setReferenceOffset(currentOffset);
-      setBookedDays(isBooked);
-    };
+      )
+      setReferenceOffset(currentOffset)
+      setBookedDays(isBooked)
+    }
     if (active) {
-      run();
+      run()
     }
     return () => {
-      active = false;
-    };
-  });
+      active = false
+    }
+  })
 
   const getEpoch = (date, time) => {
-    const [hour, minutes] = time.split(":");
+    const [hour, minutes] = time.split(':')
     return parseInt(
       Date.UTC(
         date.getFullYear(),
@@ -78,27 +78,27 @@ function Booking(props) {
         parseInt(hour),
         parseInt(minutes)
       ) / 1000
-    );
-  };
+    )
+  }
 
   const validate = async () => {
     const startOffset = getOffset(
       getEpoch(startDate, startTime),
       bookingReferenceTime,
       bookingIntervalSize
-    );
+    )
     const endOffset = getOffset(
       getEpoch(endDate, endTime),
       bookingReferenceTime,
       bookingIntervalSize
-    );
-    const diff = endOffset - startOffset;
+    )
+    const diff = endOffset - startOffset
     if (diff < 1) {
-      alert("You must book at least 1 hour");
-      return;
+      alert('You must book at least 1 hour')
+      return
     }
-    setStep(3);
-  };
+    setStep(3)
+  }
 
   return (
     <>
@@ -148,7 +148,7 @@ function Booking(props) {
         </div>
       </div>
     </>
-  );
+  )
 }
 
-export default Booking;
+export default Booking

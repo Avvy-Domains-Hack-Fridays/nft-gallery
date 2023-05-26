@@ -1,7 +1,7 @@
 function NFTPreview(props) {
-  const { nft, onClick, active } = props;
+  const { nft, onClick, active } = props
   return (
-    <div className={`user-nft ${active ? "selected" : ""}`} onClick={onClick}>
+    <div className={`user-nft ${active ? 'selected' : ''}`} onClick={onClick}>
       <div className="nft-image">
         <img
           alt={nft.name}
@@ -18,7 +18,7 @@ function NFTPreview(props) {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
-export default NFTPreview;
+export default NFTPreview

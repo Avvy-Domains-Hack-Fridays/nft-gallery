@@ -1,13 +1,13 @@
-import NFTPreview from "./NFTPreview";
-import { useState } from "react";
+import NFTPreview from './NFTPreview'
+import { useState } from 'react'
 
 function UserNFTs(props) {
-  const { nfts, address, selectedNFT, selectNFT, setStep } = props;
-  const [activeNFT, setActiveNFT] = useState(0);
+  const { nfts, address, selectedNFT, selectNFT, setStep } = props
+  const [activeNFT, setActiveNFT] = useState(0)
 
   const nextStep = () => {
-    if (selectedNFT) setStep(2);
-  };
+    if (selectedNFT) setStep(2)
+  }
   return (
     <div>
       {nfts.length > 0 ? (
@@ -20,12 +20,12 @@ function UserNFTs(props) {
                 key={i}
                 nft={nft}
                 onClick={(e) => {
-                  setActiveNFT(i);
-                  selectNFT(nft);
+                  setActiveNFT(i)
+                  selectNFT(nft)
                 }}
                 active={activeNFT == i}
               />
-            );
+            )
           })}
           <div>
             <button onClick={nextStep}>Next &gt;</button>
@@ -35,7 +35,7 @@ function UserNFTs(props) {
         <div>You don't seem to have any NFTs on [{address}]</div>
       )}
     </div>
-  );
+  )
 }
 
-export default UserNFTs;
+export default UserNFTs
