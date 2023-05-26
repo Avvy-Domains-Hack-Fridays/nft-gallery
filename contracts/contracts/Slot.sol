@@ -203,6 +203,11 @@ contract Rental is Ownable {
     }
   }
 
+  // withdraw plz
+  function withdraw() public onlyOwner {
+    payable(msg.sender).transfer(address(this).balance);
+  }
+
   constructor(uint _bookingReferenceTime, uint _bookingIntervalSize) {
     bookingReferenceTime = _bookingReferenceTime;
     bookingIntervalSize = _bookingIntervalSize;

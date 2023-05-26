@@ -205,5 +205,29 @@ describe("Rental", function () {
         }
       }
     })
+
+    it('should allow owner to withdraw', async () => {
+      await contracts.rental.createSlot(ethers.utils.parseEther('1'))
+      let tx = await contracts.rental.book('0', contractAddress, tokenId, 1, 2, {
+        value: ethers.utils.parseEther('2')
+      })
+      await tx.wait()
+      const balanceBefore = await ethers.provider.getBalance(signers[0].address)
+      tx = await contracts.rental.withdraw()
+      await tx.wait()
+      const balanceAfter = await ethers.provider.getBalance(signers[0].address)
+      const expected = ethers.utils.parseEther('2')
+      const diff = parseInt(expected.sub(balanceAfter.sub(balanceBefore)))
+      expect(diff).to.be.lessThanOrEqual(48687997507276)
+    })
+
+    it('should not allow non-owner to withdraw', async () => {
+      await contracts.rental.createSlot(ethers.utils.parseEther('1'))
+      const tx = await contracts.rental.book('0', contractAddress, tokenId, 1, 2, {
+        value: ethers.utils.parseEther('2')
+      })
+      const out = await tx.wait()
+      await expect(contracts.rental.connect(signers[1]).withdraw()).to.be.reverted
+    })
   })
 });
