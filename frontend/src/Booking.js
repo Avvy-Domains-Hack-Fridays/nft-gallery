@@ -1,6 +1,7 @@
 import NFTPreview from './NFTPreview'
 import { useState, useEffect } from 'react'
 import DatePicker from 'react-datepicker'
+import { ethers } from 'ethers'
 
 function TimePicker(props) {
   const hours = []
@@ -31,6 +32,7 @@ function Booking(props) {
     bookingReferenceTime,
     bookingIntervalSize,
     contract,
+    viemContract,
     goBack,
     selectedNFT,
     selectedSlot,
@@ -44,6 +46,8 @@ function Booking(props) {
   const [endDate, setEndDate] = useState(null)
   const [endTime, setEndTime] = useState('0:00')
   const [isPayment, setPayment] = useState(false)
+  const [startOffset, setStartOffset] = useState(false)
+  const [endOffset, setEndOffset] = useState(false)
   const [slot, setSlot] = useState(null)
 
   useEffect(() => {
@@ -74,13 +78,32 @@ function Booking(props) {
     }
   })
 
+  const pay = async () => {
+    const amount = slot.pricePerInterval * window.BigInt(endOffset - startOffset + 1)
+
+    try {
+      await viemContract.write.book({
+        args: [
+          selectedSlot,
+          selectedNFT.collectionContract,
+          selectedNFT.tokenId,
+          startOffset,
+          endOffset
+        ],
+        value: amount
+      })
+    } catch (err) {
+      alert('Failed to book space')
+    }
+  }
+
   const getEpoch = (date, time) => {
     const [hour, minutes] = time.split(':')
     return parseInt(
       Date.UTC(
         date.getFullYear(),
         date.getMonth(),
-        date.getDay(),
+        date.getDate(),
         parseInt(hour),
         parseInt(minutes)
       ) / 1000
@@ -108,6 +131,8 @@ function Booking(props) {
       return
     }
     setPayment(true)
+    setStartOffset(startOffset)
+    setEndOffset(endOffset)
   }
 
   return (
@@ -120,8 +145,13 @@ function Booking(props) {
         <div className="w-full">
           {isPayment ? (
             <>
-              Ok let's pay.
-              <button onClick={() => setPayment(false)}>Go back</button>
+              {endOffset - startOffset + 1} hours <br />
+              @ {ethers.formatEther(slot.pricePerInterval.toString())} AVAX per hour <br />
+              = {ethers.formatEther(slot.pricePerInterval * window.BigInt(endOffset - startOffset + 1))} AVAX
+              <div className='mt-4'>
+                <button className='bg-gray-100 py-2 px-4' onClick={() => setPayment(false)}>Go back</button>
+                <button className='bg-gray-100 py-2 px-4' onClick={() => pay()}>Pay</button>
+              </div>
             </>
           ) : (
             <>

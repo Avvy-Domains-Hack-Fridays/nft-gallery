@@ -91,7 +91,7 @@ function App() {
   }
 
   const getCurrentOffset = () => {
-    const now = parseInt(Date.now() / 1000)
+    const now = parseInt(new Date().getTime() / 1000)
     return getOffset(now)
   }
 
@@ -221,6 +221,7 @@ function App() {
           <>
             <p>step 2</p>
             <Booking
+              viemContract={viemContract}
               contract={contract}
               goBack={() => setStep(1)}
               selectedSlot={selectedSlot}
