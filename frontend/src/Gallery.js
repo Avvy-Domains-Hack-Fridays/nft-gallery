@@ -1,9 +1,10 @@
 import axios from 'axios'
 import { useEffect, useState } from 'react'
 import { ethers } from 'ethers'
+import ERC721ABI from './ERC721ABI.json'
 
 export const Gallery = (props) => {
-  const { openModal, owner, address, contract, viemContract, getCurrentOffset, bookingReferenceTime } = props
+  const { openModal, owner, address, mainnetEthersProvider, contract, viemContract, getCurrentOffset, bookingReferenceTime } = props
 
   const [galleryNFTs, setGalleryNFTs] = useState([])
 
@@ -49,16 +50,25 @@ export const Gallery = (props) => {
   }
 
   const fetchNFTmetadata = async (slots) => {
-    let nfts = []
-    console.log(slots)
+    const promises = []
     for (let i = 0; i < slots.length; i++) {
-      if (slots[i] !== null) {
-        // TODO: remove mock data, check glacier API or query from contract, unless we want to spill our joepegs api key :/
+      promises.push(new Promise(async (resolve, reject) => {
+        if (slots[i] !== null) {
+          const contract = new ethers.Contract(
+            slots[i].nftContract,
+            ERC721ABI,
+            mainnetEthersProvider,
+          )
+          const res = await contract.tokenURI(slots[i].tokenId)
+          const r2 = await axios.get(res)
+          return resolve({
+            name: r2.data.name,
+            image: r2.data.image,
+            contract_address: slots[i].nftContract,
+            token_id: slots[i].tokenId
+          })
+        }
 
-        slots[i].image = '/img/default.PNG'
-        slots[i].name = 'test'
-
-        nfts.push(slots[i])
         // const config = {
         //   headers:{
         //     'x-joepegs-api-key': process.env.JOEPEGS_API_KEY
@@ -79,10 +89,12 @@ export const Gallery = (props) => {
         // }).catch(function(error) {
         //   console.log(error);
         // });
-      } else {
-        nfts.push(null)
-      }
+        else {
+          return resolve(null)
+        }
+     }))
     }
+    const nfts = await Promise.all(promises)
     console.log(nfts)
     setGalleryNFTs(nfts)
     return nfts

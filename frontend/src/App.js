@@ -194,7 +194,7 @@ function App() {
       </header>
       <main>
         <section className="body-font text-gray-600">
-          <Gallery getCurrentOffset={getCurrentOffset} openModal={openModal} owner={owner} address={address} contract={contract} viemContract={viemContract} bookingReferenceTime={bookingReferenceTime} />
+          <Gallery mainnetEthersProvider={mainnetProvider} getCurrentOffset={getCurrentOffset} openModal={openModal} owner={owner} address={address} contract={contract} viemContract={viemContract} bookingReferenceTime={bookingReferenceTime} />
         </section>
       </main>
       <Modal
