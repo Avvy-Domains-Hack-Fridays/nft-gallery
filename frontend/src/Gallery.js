@@ -1,12 +1,35 @@
 import axios from 'axios'
 import { useEffect, useState } from 'react'
+import { ethers } from 'ethers'
 
 export const Gallery = (props) => {
-  const { openModal } = props
+  const { openModal, owner, address, contract, viemContract, getCurrentOffset, bookingReferenceTime } = props
 
   const [galleryNFTs, setGalleryNFTs] = useState([])
 
   const fetchCurrentSlots = async () => {
+    const currentOffset = getCurrentOffset()
+    if (isNaN(currentOffset)) return // has not loaded yet.
+    const bookings = await contract.getBookingsAtOffset(currentOffset)
+
+    // assemble bookings data
+    let slotBookings = []
+    for (let i = 0; i < bookings.bookers.length; i += 1) {
+      slotBookings.push({
+        hasBooking: bookings.hasBooking[i],
+        bookingId: bookings.bookingIds[i],
+        nftContract: bookings.nftContracts[i],
+        tokenId: bookings.tokenIds[i],
+        booker: bookings.bookers[i]
+      })
+    }
+
+    return fetchNFTmetadata(slotBookings.map(b => {
+      if (b.hasBooking) return b
+      return null
+    }))
+
+    /*
     let currentSlots = [
       {
         contract_address: '0xFff2b395d039d4Eae7Afa4ED9946eD1c6f4A04B0',
@@ -22,6 +45,7 @@ export const Gallery = (props) => {
     ]
 
     return fetchNFTmetadata(currentSlots)
+    */
   }
 
   const fetchNFTmetadata = async (slots) => {
@@ -68,7 +92,17 @@ export const Gallery = (props) => {
     ;(async () => {
       fetchCurrentSlots()
     })()
-  }, [])
+  }, [bookingReferenceTime])
+
+  const addSlot = async () => {
+    let cost = prompt('How much AVAX should the slot cost per hour?')
+    let avax = ethers.parseEther(cost)
+    try {
+      await viemContract.write.createSlot([avax])
+    } catch (err) {
+      alert('Failed to add slot')
+    }
+  }
 
   return (
     <div className="container mx-auto px-5 py-2 lg:px-32 lg:pt-12">
@@ -107,6 +141,9 @@ export const Gallery = (props) => {
           )
         })}
       </div>
+      {owner === address ? (
+        <div className='cursor-pointer mt-8 text-center w-full' onClick={addSlot}>{'As an owner, you can add a new slot'}</div>
+      ) : null}
     </div>
   )
 }

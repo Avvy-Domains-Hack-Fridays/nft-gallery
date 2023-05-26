@@ -43,6 +43,8 @@ function Booking(props) {
   const [startTime, setStartTime] = useState('0:00')
   const [endDate, setEndDate] = useState(null)
   const [endTime, setEndTime] = useState('0:00')
+  const [isPayment, setPayment] = useState(false)
+  const [slot, setSlot] = useState(null)
 
   useEffect(() => {
     let active = true
@@ -59,6 +61,10 @@ function Booking(props) {
       )
       setReferenceOffset(currentOffset)
       setBookedDays(isBooked)
+      
+      // load slot data
+      const slot = await contract.slots(selectedSlot)
+      setSlot(slot)
     }
     if (active) {
       run()
@@ -82,6 +88,10 @@ function Booking(props) {
   }
 
   const validate = async () => {
+    if (!startDate || !startTime || !endDate || !endTime) {
+      alert('You are missing data')
+      return
+    }
     const startOffset = getOffset(
       getEpoch(startDate, startTime),
       bookingReferenceTime,
@@ -97,7 +107,7 @@ function Booking(props) {
       alert('You must book at least 1 hour')
       return
     }
-    setStep(3)
+    setPayment(true)
   }
 
   return (
@@ -108,43 +118,52 @@ function Booking(props) {
       <div className="flex justify-between items-center flex-shrink-0">
         <NFTPreview nft={selectedNFT} />
         <div className="w-full">
-          <div>All times are in UTC</div>
-          <div className="mt-4">
-            Start Date
-            <DatePicker
-              className="border border-gray-500 rounded"
-              selected={startDate}
-              onChange={(date) => setStartDate(date)}
-            />
-          </div>
-          <div>
-            Start Time
-            <TimePicker
-              value={startTime}
-              onChange={(e) => setStartTime(e.target.value)}
-            />
-          </div>
-          <div className="mt-4">
-            End Date
-            <DatePicker
-              className="border border-gray-500 rounded"
-              selected={endDate}
-              onChange={(date) => setEndDate(date)}
-            />
-          </div>
-          <div>
-            End Time
-            <TimePicker
-              value={endTime}
-              onChange={(e) => setEndTime(e.target.value)}
-            />
-          </div>
-          <button
-            className="bg-gray-100 mt-2 py-2 px-4 cursor-pointer"
-            onClick={validate}
-          >
-            Validate
-          </button>
+          {isPayment ? (
+            <>
+              Ok let's pay.
+              <button onClick={() => setPayment(false)}>Go back</button>
+            </>
+          ) : (
+            <>
+              <div>All times are in UTC</div>
+              <div className="mt-4">
+                Start Date
+                <DatePicker
+                  className="border border-gray-500 rounded"
+                  selected={startDate}
+                  onChange={(date) => setStartDate(date)}
+                />
+              </div>
+              <div>
+                Start Time
+                <TimePicker
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                />
+              </div>
+              <div className="mt-4">
+                End Date
+                <DatePicker
+                  className="border border-gray-500 rounded"
+                  selected={endDate}
+                  onChange={(date) => setEndDate(date)}
+                />
+              </div>
+              <div>
+                End Time
+                <TimePicker
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                />
+              </div>
+              <button
+                className="bg-gray-100 mt-2 py-2 px-4 cursor-pointer"
+                onClick={validate}
+              >
+                Validate
+              </button>
+            </>
+          )}
         </div>
       </div>
     </>

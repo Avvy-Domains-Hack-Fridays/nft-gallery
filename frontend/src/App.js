@@ -9,6 +9,8 @@ import Booking from './Booking'
 import ABI from './ABI.json'
 import { ethers } from 'ethers'
 import AVVY from '@avvy/client'
+import { useWalletClient } from 'wagmi'
+import { getContract } from 'viem'
 
 import 'react-datepicker/dist/react-datepicker.css'
 
@@ -23,13 +25,16 @@ function App() {
   const [bookingReferenceTime, setBookingReferenceTime] = useState(null)
   const [bookingIntervalSize, setBookingIntervalSize] = useState(null)
   const [step, setStep] = useState(1)
+  const [owner, setOwner] = useState(null)
 
   const { chain } = useNetwork()
   let chainData
   let contract
+  let viemContract
   const mainnetProvider = new ethers.JsonRpcProvider(
     'https://api.avax.network/ext/bc/C/rpc'
   )
+  const { data: walletClient, isError, isLoading } = useWalletClient()
   if (chain) {
     chainData = ABI[chain.id][0]
     const contractProvider = new ethers.JsonRpcProvider(
@@ -44,6 +49,14 @@ function App() {
       contractAbi,
       contractProvider
     )
+
+    if (walletClient) {
+      viemContract = getContract({
+        address: contractAddress,
+        abi: contractAbi,
+        walletClient,
+      })
+    }
   }
   const avvy = new AVVY(mainnetProvider)
   useEffect(() => {
@@ -53,9 +66,11 @@ function App() {
         const res = await Promise.all([
           contract.bookingReferenceTime(),
           contract.bookingIntervalSize(),
+          contract.owner(),
         ])
         setBookingReferenceTime(res[0])
         setBookingIntervalSize(res[1])
+        setOwner(res[2])
       }
     }
     if (active) {
@@ -179,7 +194,7 @@ function App() {
       </header>
       <main>
         <section className="body-font text-gray-600">
-          <Gallery openModal={openModal} />
+          <Gallery getCurrentOffset={getCurrentOffset} openModal={openModal} owner={owner} address={address} contract={contract} viemContract={viemContract} bookingReferenceTime={bookingReferenceTime} />
         </section>
       </main>
       <Modal
@@ -214,7 +229,6 @@ function App() {
               bookingIntervalSize={bookingIntervalSize}
               getCurrentOffset={getCurrentOffset}
               getOffset={getOffset}
-              setStep={setStep}
             />
           </>
         ) : (
