@@ -11,3 +11,45 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.ReactModalPortal {
+  z-index: 4;
+  text-align: center;
+}
+.ReactModalPortal .modal-close-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 1.5em;
+  width: 1.5em;
+  height: 1.5em;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.ReactModalPortal .user-nfts {
+  max-height: 60vh;
+  overflow-y: scroll;
+}
+.ReactModalPortal .user-nft {
+  cursor: pointer;
+  display: inline-block;
+  box-sizing: content-box;
+  margin-right: 16px;
+  max-width: 160px;
+  vertical-align: top;
+  margin-bottom: 36px;
+}
+.ReactModalPortal .user-nft.selected {
+  border: 3px solid #e84142;
+}
+.ReactModalPortal .user-nft .nft-image {
+  width: 160px;
+  height: 160px;
+}
+.ReactModalPortal .user-nft .nft-image img {
+  max-width: 100%;
+  width: fit-content;
+  max-height: 100%;
+  margin: auto;
+}
