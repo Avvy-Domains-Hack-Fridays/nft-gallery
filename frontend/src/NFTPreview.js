@@ -1,3 +1,4 @@
+
 function NFTPreview(props) {
   const { nft, onClick, active } = props
   return (

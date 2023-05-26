@@ -25,32 +25,38 @@ function App() {
   const [step, setStep] = useState(1)
 
   const { chain } = useNetwork()
-  const chainData = ABI[chain.id][0]
+  let chainData
+  let contract
   const mainnetProvider = new ethers.JsonRpcProvider(
     'https://api.avax.network/ext/bc/C/rpc'
   )
-  const contractProvider = new ethers.JsonRpcProvider(
-    chain.id === 43113
-      ? 'https://api.avax-test.network/ext/bc/C/rpc'
-      : 'https://api.avax.network/ext/bc/C/rpc'
-  )
-  const contractAddress = chainData.contracts.Rental.address
-  const contractAbi = chainData.contracts.Rental.abi
-  const contract = new ethers.Contract(
-    contractAddress,
-    contractAbi,
-    contractProvider
-  )
+  if (chain) {
+    chainData = ABI[chain.id][0]
+    const contractProvider = new ethers.JsonRpcProvider(
+      chain.id === 43113
+        ? 'https://api.avax-test.network/ext/bc/C/rpc'
+        : 'https://api.avax.network/ext/bc/C/rpc'
+    )
+    const contractAddress = chainData.contracts.Rental.address
+    const contractAbi = chainData.contracts.Rental.abi
+    contract = new ethers.Contract(
+      contractAddress,
+      contractAbi,
+      contractProvider
+    )
+  }
   const avvy = new AVVY(mainnetProvider)
   useEffect(() => {
     let active = true
     const run = async () => {
-      const res = await Promise.all([
-        contract.bookingReferenceTime(),
-        contract.bookingIntervalSize(),
-      ])
-      setBookingReferenceTime(res[0])
-      setBookingIntervalSize(res[1])
+      if (contract) {
+        const res = await Promise.all([
+          contract.bookingReferenceTime(),
+          contract.bookingIntervalSize(),
+        ])
+        setBookingReferenceTime(res[0])
+        setBookingIntervalSize(res[1])
+      }
     }
     if (active) {
       run()
@@ -58,7 +64,7 @@ function App() {
     return () => {
       active = false
     }
-  })
+  }, [contract])
 
   const getOffset = (epoch) => {
     const _bookingReferenceTime = parseInt(bookingReferenceTime)
