@@ -35,10 +35,15 @@ export const Gallery = (props) => {
         slots[i].name = 'test';
 
         nfts.push(slots[i])
-
+        // const config = {
+        //   headers:{
+        //     'x-joepegs-api-key': process.env.JOEPEGS_API_KEY
+        //   }
+        // };
         // axios
-        // .get(`https://api.joepegs.dev/v3/collections/avalanche/${slots[i].contract_address}/tokens/${slots[i].token_id}`)
+        // .get(`https://api.joepegs.dev/v3/collections/avalanche/${slots[i].contract_address}/tokens/${slots[i].token_id}`,config)
         // .then(response => {
+        //   console.log(response)
         //   const data = response?.data?.data
         //   if(data.length>0){
         //     slots[i].image = data.metadata.image;
