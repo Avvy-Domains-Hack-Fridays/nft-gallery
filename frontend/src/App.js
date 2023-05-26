@@ -10,6 +10,8 @@ import ABI from "./ABI.json";
 import { ethers } from 'ethers'
 import AVVY from '@avvy/client'
 
+import "react-datepicker/dist/react-datepicker.css";
+
 Modal.setAppElement('#root');
 
 function App() {
@@ -47,6 +49,18 @@ function App() {
       active = false
     }
   })
+
+  const getOffset = (epoch) => {
+    const _bookingReferenceTime = parseInt(bookingReferenceTime)
+    const _bookingIntervalSize = parseInt(bookingIntervalSize)
+    const intervalOffset = parseInt((epoch - _bookingReferenceTime) / _bookingIntervalSize)
+    return intervalOffset
+  }
+
+  const getCurrentOffset = () => {
+    const now = parseInt(Date.now() / 1000)
+    return getOffset(now)
+  }
   
   const fetchUserNFTs = async (pageToken=null) => {
     if(!isConnected){
@@ -158,7 +172,7 @@ function App() {
           address={address}
           selectNFT={selectNFT}
           setStep={setStep} />
-        ) : (
+        ) : step === 2 ? (
           <>
             <p>step 2</p>
             <Booking 
@@ -166,8 +180,15 @@ function App() {
               goBack={() => setStep(1)}
               selectedSlot={selectedSlot}
               selectedNFT={selectedNFT} 
+              bookingReferenceTime={bookingReferenceTime}
+              bookingIntervalSize={bookingIntervalSize}
+              getCurrentOffset={getCurrentOffset}
+              getOffset={getOffset}
+              setStep={setStep}
             />
           </>
+        ) : (
+          <div>Step 3</div>
         )}
       </Modal>
     </>
