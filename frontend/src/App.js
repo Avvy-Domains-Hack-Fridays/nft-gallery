@@ -20,6 +20,7 @@ function App() {
   const [modalIsOpen, setIsOpen] = useState(false);
   const [bookingReferenceTime, setBookingReferenceTime] = useState(null)
   const [bookingIntervalSize, setBookingIntervalSize] = useState(null)
+  const [step,setStep] = useState(1);
 
   const { chain } = useNetwork()
   const chainData = ABI[chain.id][0]
@@ -151,19 +152,22 @@ function App() {
         <h2 >Select NFT</h2>
         <button className="modal-close-btn" onClick={closeModal}>x</button>
         <br></br>
-	      {selectedNFT ? (
-          <Booking 
-            contract={contract}
-            goBack={() => selectNFT(null)}
-            selectedSlot={selectedSlot}
-            selectedNFT={selectedNFT} 
-          />
-        ) : (
+        {step == 1 ? (
           <UserNFTs 
-            nfts={userNFTs}
-            address={address}
-            selectNFT={selectNFT}
-          />
+          nfts={userNFTs}
+          address={address}
+          selectNFT={selectNFT}
+          setStep={setStep} />
+        ) : (
+          <>
+            <p>step 2</p>
+            <Booking 
+              contract={contract}
+              goBack={() => setStep(1)}
+              selectedSlot={selectedSlot}
+              selectedNFT={selectedNFT} 
+            />
+          </>
         )}
       </Modal>
     </>
