@@ -103,13 +103,14 @@ function App() {
                     'ipfs://',
                     'https://ipfs.io/ipfs/'
                   )
-                : '/img/notFound.jpg',
+                : null,
               name: nft.metadata.name
                 ? nft.name + ' - ' + nft.metadata.name
                 : nft.name + ' #' + nft.tokenId,
               collectionName: nft.name,
               collectionContract: nft.address,
               tokenId: nft.tokenId,
+              tokenUri: nft.tokenUri,
             })
           })
 
