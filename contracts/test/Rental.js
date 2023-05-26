@@ -128,5 +128,82 @@ describe("Rental", function () {
       out = await contracts.rental.bookingLookups(slotId, 2)
       expect(out).to.equal(bookingId.add('1'))
     })
+
+    it('should allow getting bookings at a given offset', async () => {
+      let tx = await contracts.rental.createSlot(ethers.utils.parseEther('1'))
+      let out = await tx.wait()
+      tx = await contracts.rental.createSlot(ethers.utils.parseEther('1'))
+      out = await tx.wait()
+      tx = await contracts.rental.createSlot(ethers.utils.parseEther('1'))
+      out = await tx.wait()
+      tx = await contracts.rental.connect(signers[1]).book('0', contractAddress, tokenId, 1, 2, {
+        value: ethers.utils.parseEther('2')
+      })
+      tx = await contracts.rental.connect(signers[3]).book('1', contractAddress, tokenId, 1, 2, {
+        value: ethers.utils.parseEther('2')
+      })
+      const bookings = await contracts.rental.connect(signers[1]).getBookingsAtOffset(1)
+
+      // assemble bookings data
+      let slotBookings = {}
+      for (let i = 0; i < bookings.bookers.length; i += 1) {
+        slotBookings[i] = {
+          hasBooking: bookings.hasBooking[i],
+          bookingId: bookings.bookingIds[i],
+          nftContract: bookings.nftContracts[i],
+          tokenId: bookings.tokenIds[i],
+          booker: bookings.bookers[i]
+        }
+      }
+
+      expect(slotBookings[0].hasBooking).to.equal(true)
+      expect(slotBookings[1].hasBooking).to.equal(true)
+      expect(slotBookings[2].hasBooking).to.equal(false)
+
+      expect(slotBookings[0].bookingId.toString()).to.equal('0')
+      expect(slotBookings[1].bookingId.toString()).to.equal('1')
+
+      expect(slotBookings[0].nftContract).to.equal(contractAddress)
+      expect(slotBookings[1].nftContract).to.equal(contractAddress)
+
+      expect(slotBookings[0].tokenId).to.equal(tokenId)
+      expect(slotBookings[1].tokenId).to.equal(tokenId)
+
+      expect(slotBookings[0].booker).to.equal(signers[1].address)
+      expect(slotBookings[1].booker).to.equal(signers[3].address)
+    })
+
+    it('should allow getting booking data for a given slot', async () => {
+      let tx = await contracts.rental.createSlot(ethers.utils.parseEther('1'))
+      let out = await tx.wait()
+      tx = await contracts.rental.connect(signers[1]).book('0', contractAddress, tokenId, 1, 2, {
+        value: ethers.utils.parseEther('2')
+      })
+      tx = await contracts.rental.connect(signers[3]).book('0', contractAddress, tokenId, 12, 14, {
+        value: ethers.utils.parseEther('3')
+      })
+      tx = await contracts.rental.connect(signers[3]).book('0', contractAddress, tokenId, 3, 3, {
+        value: ethers.utils.parseEther('1')
+      })
+      const bookings = await contracts.rental.connect(signers[1]).isBooked(0, 0, 14)
+      expect(bookings.length).to.equal(15) // 0-14 inclusive
+
+      const bookedIndexes = [
+        1,
+        2,
+        3,
+        12,
+        13,
+        14,
+      ]
+      
+      for (let i = 0; i < bookings.length; i += 1) {
+        if (bookedIndexes.indexOf(i) > -1) {
+          expect(bookings[i]).to.be.true
+        } else {
+          expect(bookings[i]).to.be.false
+        }
+      }
+    })
   })
 });

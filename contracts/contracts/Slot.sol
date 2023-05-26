@@ -3,6 +3,8 @@ pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
+import "hardhat/console.sol";
+
 contract Rental is Ownable {
   event SlotCreated(uint id);
   event BookingCreated(uint id);
@@ -141,6 +143,64 @@ contract Rental is Ownable {
     }
 
     emit BookingCreated(createdId);
+  }
+
+  // this function should return, for each slot,
+  // whether it is booked at a given offset.
+  // we include hasBooking
+  // because bookingIds can be 0 in multiple cases
+  function getBookingsAtOffset(
+    uint offset
+  ) public view returns (
+    bool[] memory hasBooking, 
+    uint[] memory bookingIds, 
+    address[] memory nftContracts, 
+    uint[] memory tokenIds,
+    address[] memory bookers
+  ) {
+    uint bookingId;
+    Booking memory booking;
+    hasBooking = new bool[](lastSlotId);
+    bookingIds = new uint[](lastSlotId);
+    nftContracts = new address[](lastSlotId);
+    tokenIds = new uint[](lastSlotId);
+    bookers = new address[](lastSlotId);
+    for (uint i = 0; i < lastSlotId; i += 1) {
+      bookingId = bookingLookups[i][offset];
+      if (bookingId > 0) {
+        // booking exists
+        booking = bookings[bookingId - 1];
+        bookingIds[i] = bookingId - 1;
+        hasBooking[i] = true;
+        nftContracts[i] = booking.nftContract;
+        tokenIds[i] = booking.tokenId;
+        bookers[i] = booking.booker;
+      } else {
+        // booking does not exist
+        bookingIds[i] = 0;
+        hasBooking[i] = false;
+        nftContracts[i] = address(0);
+        tokenIds[i] = 0;
+        bookers[i] = address(0);
+      }
+    }
+  }
+
+  // this function should return, for a given slot,
+  // an array of bookingIds between startOffset and endOffset.
+  function isBooked(
+    uint slotId,
+    uint startOffset,
+    uint endOffset
+  ) public view returns (
+    bool[] memory booked
+  ) {
+    require(endOffset >= startOffset, "Rental: endOffset cannot be less than startOffset");
+    booked = new bool[](endOffset - startOffset + 1);
+    uint count = endOffset - startOffset + 1; // we include endOffset in this calculation
+    for (uint i = 0; i < count; i += 1) {
+      booked[i] = bookingLookups[slotId][i + startOffset] > 0;
+    }
   }
 
   constructor(uint _bookingReferenceTime, uint _bookingIntervalSize) {
