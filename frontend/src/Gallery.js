@@ -85,7 +85,7 @@ export const Gallery = (props) => {
             </div>
           ) : (
             <div className="flex w-1/3 flex-wrap" key={i}>
-              <div className="w-full p-1 md:p-2">
+              <div className="w-full p-1 md:p-2" >
                 <a href={`https://www.avalytics.xyz/collection/${slot.contract_address}/${slot.token_id}`} target="_blank">
                   <img
                     alt={slot.title}
