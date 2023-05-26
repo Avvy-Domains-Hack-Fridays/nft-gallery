@@ -1,10 +1,14 @@
 import axios from "axios";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import Modal from 'react-modal';
-import { useAccount } from 'wagmi'
+import { useNetwork, useAccount } from 'wagmi'
 import { useState, useEffect } from 'react';
 import { Gallery } from './Gallery';
 import UserNFTs from "./UserNFTs";
+import Booking from "./Booking";
+import ABI from "./ABI.json";
+import { ethers } from 'ethers'
+import AVVY from '@avvy/client'
 
 Modal.setAppElement('#root');
 
@@ -14,6 +18,34 @@ function App() {
   const [selectedNFT,setSelectedNFT] = useState(null);
   const [selectedSlot,setSelectedSlot] = useState(null);
   const [modalIsOpen, setIsOpen] = useState(false);
+  const [bookingReferenceTime, setBookingReferenceTime] = useState(null)
+  const [bookingIntervalSize, setBookingIntervalSize] = useState(null)
+
+  const { chain } = useNetwork()
+  const chainData = ABI[chain.id][0]
+  const mainnetProvider = new ethers.JsonRpcProvider('https://api.avax.network/ext/bc/C/rpc')
+  const contractProvider = new ethers.JsonRpcProvider(chain.id === 43113 ? 'https://api.avax-test.network/ext/bc/C/rpc' : 'https://api.avax.network/ext/bc/C/rpc')
+  const contractAddress = chainData.contracts.Rental.address
+  const contractAbi = chainData.contracts.Rental.abi
+  const contract = new ethers.Contract(contractAddress, contractAbi, contractProvider)
+  const avvy = new AVVY(mainnetProvider)
+  useEffect(() => {
+    let active = true
+    const run = async () => {
+      const res = await Promise.all([
+        contract.bookingReferenceTime(),
+        contract.bookingIntervalSize()
+      ])
+      setBookingReferenceTime(res[0])
+      setBookingIntervalSize(res[1])
+    }
+    if (active) {
+      run()
+    }
+    return () => {
+      active = false
+    }
+  })
   
   const fetchUserNFTs = async (pageToken=null) => {
     if(!isConnected){
@@ -119,11 +151,20 @@ function App() {
         <h2 >Select NFT</h2>
         <button className="modal-close-btn" onClick={closeModal}>x</button>
         <br></br>
-        <UserNFTs 
-          nfts={userNFTs}
-          address={address}
-          selectNFT={selectNFT}
-        />
+	      {selectedNFT ? (
+          <Booking 
+            contract={contract}
+            goBack={() => selectNFT(null)}
+            selectedSlot={selectedSlot}
+            selectedNFT={selectedNFT} 
+          />
+        ) : (
+          <UserNFTs 
+            nfts={userNFTs}
+            address={address}
+            selectNFT={selectNFT}
+          />
+        )}
       </Modal>
     </>
   );
