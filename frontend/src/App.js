@@ -14,6 +14,7 @@ function App() {
   const [selectedNFT,setSelectedNFT] = useState(null);
   const [selectedSlot,setSelectedSlot] = useState(null);
   const [modalIsOpen, setIsOpen] = useState(false);
+  const [step,setStep] = useState(1);
   
   const fetchUserNFTs = async (pageToken=null) => {
     if(!isConnected){
@@ -119,11 +120,19 @@ function App() {
         <h2 >Select NFT</h2>
         <button className="modal-close-btn" onClick={closeModal}>x</button>
         <br></br>
-        <UserNFTs 
+        {step == 1 ? (
+          <UserNFTs 
           nfts={userNFTs}
           address={address}
           selectNFT={selectNFT}
+          setStep={setStep}
         />
+        ) : (
+          <>
+            <p>step 2</p>
+          </>
+        )}
+        
       </Modal>
     </>
   );

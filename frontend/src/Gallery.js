@@ -74,11 +74,11 @@ export const Gallery = (props) => {
         {galleryNFTs.map((slot,i) => {
           return slot == null ? (
             <div className="flex w-1/3 flex-wrap" key={i}>
-              <div className="w-full p-1 md:p-2">
+              <div className="w-full p-1 md:p-2 text-center">
                 <a href="#" onClick={(e) => {
                   e.preventDefault()
                   openModal(i)
-                  }} className="text-">
+                  }} className="relative inset-y-1/2">
                   Rent this space
                 </a>
               </div>
