@@ -170,6 +170,7 @@ function App() {
           <UserNFTs 
           nfts={userNFTs}
           address={address}
+          selectedNFT={selectedNFT}
           selectNFT={selectNFT}
           setStep={setStep} />
         ) : step === 2 ? (

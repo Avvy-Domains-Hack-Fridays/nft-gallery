@@ -2,10 +2,11 @@ import NFTPreview from "./NFTPreview";
 import { useState } from "react";
 
 function UserNFTs(props) {
-    const {nfts,address,selectNFT,setStep} = props
+    const {nfts,address,selectedNFT,selectNFT,setStep} = props
     const [activeNFT,setActiveNFT] = useState(0)
 
     const nextStep = () => {
+        if(selectedNFT)
         setStep(2)
     }
     return (
